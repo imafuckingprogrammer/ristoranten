@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
 import { signOut } from '@/lib/auth';
 import { OrderWithItems, OrderStatus } from '@/lib/types';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import Container from '@/components/ui/Container';
+import Grid from '@/components/ui/Grid';
+import Badge from '@/components/ui/Badge';
+import { LoadingScreen } from '@/components/ui/LoadingSpinner';
 import { Clock, ChefHat, CheckCircle, XCircle, AlertCircle, LogOut } from 'lucide-react';
 
 export default function KitchenPage() {
@@ -163,181 +168,197 @@ export default function KitchenPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-rose-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-rose-300 mx-auto"></div>
-          <p className="mt-3 text-xs text-rose-400">Loading orders...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading kitchen orders..." />;
   }
 
   return (
-    <div className="min-h-screen bg-rose-50">
-      {/* Ultra Minimal Header */}
-      <div className="bg-white/60 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-white border-b border-border">
+        <Container>
+          <div className="flex items-center justify-between py-6">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-rose-200 to-rose-300 rounded-full flex items-center justify-center shadow-lg">
-                <ChefHat className="h-5 w-5 text-rose-800" />
+              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center shadow-medium">
+                <ChefHat className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-light text-rose-900">Kitchen</h1>
-                <p className="text-xs text-rose-500">{restaurant?.name}</p>
+                <h1 className="text-xl font-medium text-foreground">Kitchen</h1>
+                <p className="text-sm text-muted">{restaurant?.name}</p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-3">
-              <div className="text-xs text-rose-600 font-light">
+            <div className="flex items-center space-x-4">
+              <Badge variant="secondary">
                 {orders.length} active orders
-              </div>
-              <button
-                onClick={handleSignOut}
-                className="text-rose-400 hover:text-rose-600 p-2 transition-all duration-300"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
+              </Badge>
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
             </div>
           </div>
-        </div>
-      </div>
+        </Container>
+      </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-6">
+      <Container className="py-8">
         {orders.length === 0 ? (
-          <div className="text-center py-16">
-            <ChefHat className="h-12 w-12 text-rose-300 mx-auto mb-6" />
-            <h3 className="text-sm font-light text-rose-900 mb-2">No Active Orders</h3>
-            <p className="text-xs text-rose-500 font-light">All caught up! New orders will appear here.</p>
-          </div>
+          <motion.div 
+            className="text-center py-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <ChefHat className="h-16 w-16 text-muted mx-auto mb-6" />
+            <h3 className="text-lg font-medium text-foreground mb-2">No Active Orders</h3>
+            <p className="text-muted">All caught up! New orders will appear here.</p>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {orders.map((order) => (
-              <div key={order.id} className="bg-white/40 backdrop-blur-sm rounded-3xl p-6 hover:bg-white/60 transition-all duration-300">
-                <div className="mb-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="text-base font-light text-rose-900">
-                        Table {order.table?.name}
-                      </h3>
-                      <p className="text-xs text-rose-500 font-light">
-                        Order #{order.id.slice(-6)}
-                      </p>
-                    </div>
-                    <div className={`px-3 py-1 rounded-full text-xs font-light ${
-                      order.status === 'PENDING' ? 'bg-orange-200/50 text-orange-800' :
-                      order.status === 'PREPARING' ? 'bg-blue-200/50 text-blue-800' :
-                      order.status === 'READY' ? 'bg-green-200/50 text-green-800' :
-                      'bg-rose-200/50 text-rose-800'
-                    }`}>
-                      <div className="flex items-center gap-1">
-                        {getStatusIcon(order.status)}
-                        {order.status.charAt(0) + order.status.slice(1).toLowerCase()}
+          <Grid cols={3} gap="lg">
+            {orders.map((order, index) => (
+              <motion.div
+                key={order.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <Card className="h-full">
+                  <div className="mb-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-lg font-medium text-foreground">
+                          Table {order.table?.name}
+                        </h3>
+                        <p className="text-sm text-muted">
+                          Order #{order.id.slice(-6)}
+                        </p>
                       </div>
+                      <Badge 
+                        variant={
+                          order.status === 'PENDING' ? 'warning' :
+                          order.status === 'PREPARING' ? 'default' :
+                          order.status === 'READY' ? 'success' :
+                          'secondary'
+                        }
+                      >
+                        <div className="flex items-center gap-1">
+                          {getStatusIcon(order.status)}
+                          {order.status.charAt(0) + order.status.slice(1).toLowerCase()}
+                        </div>
+                      </Badge>
                     </div>
-                  </div>
+                    
+                    <div className="flex items-center text-sm text-muted mb-4">
+                      <Clock className="h-4 w-4 mr-2" />
+                      {getOrderAge(order.created_at)}
+                    </div>
                   
-                  <div className="text-xs text-rose-500 mb-4 font-light">
-                    <Clock className="h-3 w-3 inline mr-1" />
-                    {getOrderAge(order.created_at)}
-                  </div>
-                  
-                  <div className="space-y-3 mb-6">
-                    {order.items.map((item) => (
-                      <div key={item.id} className="flex justify-between items-center">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="w-6 h-6 bg-rose-200/50 rounded-full flex items-center justify-center text-xs font-light text-rose-900">{item.quantity}</span>
-                            <span className="text-sm font-light text-rose-900">{item.menu_item.name}</span>
+                    <div className="space-y-3 mb-6">
+                      {order.items.map((item) => (
+                        <div key={item.id} className="p-3 bg-surface rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Badge variant="secondary" size="sm">
+                              {item.quantity}
+                            </Badge>
+                            <span className="text-sm font-medium text-foreground">{item.menu_item.name}</span>
                           </div>
                           {item.special_instructions && (
-                            <p className="text-xs text-red-600 mt-1 font-light">
+                            <p className="text-sm text-error mt-2">
                               Note: {item.special_instructions}
                             </p>
                           )}
                         </div>
+                      ))}
+                    </div>
+                    
+                    {order.special_instructions && (
+                      <div className="mb-6 p-4 bg-warning/10 border border-warning/20 rounded-lg">
+                        <p className="text-sm text-warning-foreground">
+                          <strong>Special Instructions:</strong> {order.special_instructions}
+                        </p>
                       </div>
-                    ))}
+                    )}
                   </div>
-                  
-                  {order.special_instructions && (
-                    <div className="mb-6 p-3 bg-yellow-200/20 backdrop-blur-sm rounded-2xl">
-                      <p className="text-xs text-yellow-800 font-light">
-                        <strong>Special Instructions:</strong> {order.special_instructions}
-                      </p>
-                    </div>
-                  )}
-                </div>
                 
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                  {order.status === 'PENDING' && (
-                    <button
-                      onClick={() => updateOrderStatus(order.id, 'PREPARING')}
-                      disabled={updatingOrder === order.id}
-                      className="w-full bg-blue-200/50 text-blue-800 px-6 py-4 rounded-full text-sm font-light hover:bg-blue-300/50 transition-all duration-300 disabled:opacity-50 border-0"
-                    >
-                      <ChefHat className="h-4 w-4 mr-2 inline" />
-                      {updatingOrder === order.id ? 'Starting...' : 'Start Preparing'}
-                    </button>
-                  )}
-                  
-                  {order.status === 'PREPARING' && (
-                    <div className="space-y-3">
-                      <button
-                        onClick={() => updateOrderStatus(order.id, 'READY')}
-                        disabled={updatingOrder === order.id}
-                        className="w-full bg-green-200/50 text-green-800 px-6 py-4 rounded-full text-sm font-light hover:bg-green-300/50 transition-all duration-300 disabled:opacity-50 border-0"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-2 inline" />
-                        {updatingOrder === order.id ? 'Marking...' : 'Mark Ready'}
-                      </button>
-                      <button
-                        onClick={() => updateOrderStatus(order.id, 'PENDING')}
-                        disabled={updatingOrder === order.id}
-                        className="w-full bg-rose-200/50 text-rose-800 px-6 py-3 rounded-full text-xs font-light hover:bg-rose-300/50 transition-all duration-300 disabled:opacity-50 border-0"
-                      >
-                        Back to Pending
-                      </button>
-                    </div>
-                  )}
-                  
-                  {order.status === 'READY' && (
-                    <div className="space-y-3">
-                      <button
-                        onClick={() => updateOrderStatus(order.id, 'COMPLETED')}
-                        disabled={updatingOrder === order.id}
-                        className="w-full bg-green-200/50 text-green-800 px-6 py-4 rounded-full text-sm font-light hover:bg-green-300/50 transition-all duration-300 disabled:opacity-50 border-0"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-2 inline" />
-                        {updatingOrder === order.id ? 'Completing...' : 'Complete Order'}
-                      </button>
-                      <button
+                  {/* Action Buttons */}
+                  <div className="space-y-3">
+                    {order.status === 'PENDING' && (
+                      <Button
+                        fullWidth
                         onClick={() => updateOrderStatus(order.id, 'PREPARING')}
+                        loading={updatingOrder === order.id}
                         disabled={updatingOrder === order.id}
-                        className="w-full bg-rose-200/50 text-rose-800 px-6 py-3 rounded-full text-xs font-light hover:bg-rose-300/50 transition-all duration-300 disabled:opacity-50 border-0"
                       >
-                        Back to Preparing
-                      </button>
-                    </div>
-                  )}
-                  
-                  {/* Emergency cancel button */}
-                  <button
-                    onClick={() => updateOrderStatus(order.id, 'CANCELLED')}
-                    disabled={updatingOrder === order.id}
-                    className="w-full bg-red-200/30 text-red-700 px-6 py-2 rounded-full text-xs font-light hover:bg-red-300/30 transition-all duration-300 disabled:opacity-50 border-0"
-                  >
-                    <XCircle className="h-3 w-3 mr-1 inline" />
-                    Cancel Order
-                  </button>
-                </div>
-              </div>
+                        <ChefHat className="h-4 w-4 mr-2" />
+                        {updatingOrder === order.id ? 'Starting...' : 'Start Preparing'}
+                      </Button>
+                    )}
+                    
+                    {order.status === 'PREPARING' && (
+                      <div className="space-y-3">
+                        <Button
+                          fullWidth
+                          variant="success"
+                          onClick={() => updateOrderStatus(order.id, 'READY')}
+                          loading={updatingOrder === order.id}
+                          disabled={updatingOrder === order.id}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          {updatingOrder === order.id ? 'Marking...' : 'Mark Ready'}
+                        </Button>
+                        <Button
+                          fullWidth
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => updateOrderStatus(order.id, 'PENDING')}
+                          disabled={updatingOrder === order.id}
+                        >
+                          Back to Pending
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {order.status === 'READY' && (
+                      <div className="space-y-3">
+                        <Button
+                          fullWidth
+                          variant="success"
+                          onClick={() => updateOrderStatus(order.id, 'COMPLETED')}
+                          loading={updatingOrder === order.id}
+                          disabled={updatingOrder === order.id}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          {updatingOrder === order.id ? 'Completing...' : 'Complete Order'}
+                        </Button>
+                        <Button
+                          fullWidth
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => updateOrderStatus(order.id, 'PREPARING')}
+                          disabled={updatingOrder === order.id}
+                        >
+                          Back to Preparing
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {/* Emergency cancel button */}
+                    <Button
+                      fullWidth
+                      variant="danger"
+                      size="sm"
+                      onClick={() => updateOrderStatus(order.id, 'CANCELLED')}
+                      disabled={updatingOrder === order.id}
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Cancel Order
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
             ))}
-          </div>
+          </Grid>
         )}
-      </div>
+      </Container>
     </div>
   );
 }

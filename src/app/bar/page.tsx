@@ -2,12 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
 import { signOut } from '@/lib/auth';
 import { OrderWithItems, OrderStatus } from '@/lib/types';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import Container from '@/components/ui/Container';
+import Grid from '@/components/ui/Grid';
+import Badge from '@/components/ui/Badge';
+import Input from '@/components/ui/Input';
+import { LoadingScreen } from '@/components/ui/LoadingSpinner';
 import { 
   Wine, 
   Clock, 
@@ -377,90 +383,91 @@ export default function BartenderPage() {
   });
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-rose-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-rose-300 mx-auto"></div>
-          <p className="mt-3 text-xs text-rose-400">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading bar interface..." />;
   }
 
   return (
-    <div className="min-h-screen bg-rose-50">
-      {/* Ultra Minimal Header */}
-      <div className="bg-white/60 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-white border-b border-border">
+        <Container>
+          <div className="flex items-center justify-between py-6">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-rose-200 to-rose-300 rounded-full flex items-center justify-center shadow-lg">
-                <Wine className="h-5 w-5 text-rose-800" />
+              <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center shadow-medium">
+                <Wine className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-light text-rose-900">Bar</h1>
-                <p className="text-xs text-rose-500">{restaurant?.name}</p>
+                <h1 className="text-xl font-medium text-foreground">Bar</h1>
+                <p className="text-sm text-muted">{restaurant?.name}</p>
               </div>
             </div>
             
-            <div className="flex items-center space-x-3">
-              <div className="text-xs text-rose-600 font-light">
+            <div className="flex items-center space-x-4">
+              <Badge variant="secondary">
                 {tabs.length} tabs
-              </div>
+              </Badge>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value as any)}
-                className="text-xs bg-white/50 backdrop-blur-sm border-0 rounded-full px-3 py-2 text-rose-900 focus:outline-none focus:bg-white/70 transition-all duration-300"
+                className="px-3 py-2 border border-border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:border-accent transition-all duration-200 bg-white text-foreground shadow-soft hover:shadow-medium"
               >
-                <option value="all">All</option>
+                <option value="all">All Orders</option>
                 <option value="pending">Pending</option>
                 <option value="preparing">Preparing</option>
                 <option value="ready">Ready</option>
               </select>
-              <button
+              <Button
+                size="sm"
                 onClick={() => setShowCreateTab(true)}
-                className="bg-rose-300 text-rose-900 px-4 py-2 rounded-full text-xs font-light hover:bg-rose-400 transition-all duration-300 border-0"
               >
-                + New Tab
-              </button>
-              <button
+                <Plus className="h-4 w-4 mr-2" />
+                New Tab
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleSignOut}
-                className="text-rose-400 hover:text-rose-600 p-2 transition-all duration-300"
               >
-                <LogOut className="h-4 w-4" />
-              </button>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
             </div>
           </div>
-        </div>
-      </div>
+        </Container>
+      </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <Container className="py-8">
+        <Grid cols={4} gap="lg">
           {/* Tabs Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
-              <h2 className="text-sm font-light text-rose-900 mb-6 tracking-wider uppercase">Active Tabs</h2>
+          <motion.div
+            className="lg:col-span-1"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Card>
+              <h2 className="text-lg font-medium text-foreground mb-6">Active Tabs</h2>
               <div className="space-y-3">
                 {tabs.map((tab) => (
                   <div
                     key={tab.tableId}
-                    className={`p-4 rounded-2xl cursor-pointer transition-all duration-300 ${
+                    className={`p-4 rounded-lg cursor-pointer transition-all duration-300 ${
                       selectedTab === tab.tableId
-                        ? 'bg-rose-300/50 backdrop-blur-sm text-rose-900'
-                        : 'bg-white/20 backdrop-blur-sm hover:bg-white/30'
+                        ? 'bg-accent text-white'
+                        : 'bg-surface hover:bg-surface/80'
                     }`}
                     onClick={() => setSelectedTab(tab.tableId)}
                   >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="text-sm font-light">
+                        <h3 className="text-sm font-medium">
                           {tab.tableName.includes('Bar Tab') ? tab.tableName : `Table ${tab.tableName}`}
                         </h3>
-                        <p className="text-xs opacity-75 font-light">{tab.orders.length} orders</p>
+                        <p className="text-xs opacity-75">{tab.orders.length} orders</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-light">${tab.totalAmount.toFixed(2)}</p>
-                        <p className="text-xs opacity-75 font-light">{getTabDuration(tab.startTime)}</p>
+                        <p className="text-sm font-medium">${tab.totalAmount.toFixed(2)}</p>
+                        <p className="text-xs opacity-75">{getTabDuration(tab.startTime)}</p>
                       </div>
                     </div>
                   </div>
@@ -468,18 +475,18 @@ export default function BartenderPage() {
                 
                 {tabs.length === 0 && (
                   <div className="text-center py-12">
-                    <Wine className="h-12 w-12 text-rose-300 mx-auto mb-4" />
-                    <p className="text-xs text-rose-500 font-light">No active tabs</p>
+                    <Wine className="h-12 w-12 text-muted mx-auto mb-4" />
+                    <p className="text-xs text-muted font-light">No active tabs</p>
                   </div>
                 )}
               </div>
-            </div>
-          </div>
+            </Card>
+          </motion.div>
 
           {/* Orders List */}
           <div className="lg:col-span-3">
-            <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
-              <h2 className="text-sm font-light text-rose-900 mb-6 tracking-wider uppercase">
+            <Card>
+              <h2 className="text-lg font-medium text-foreground mb-6">
                 {selectedTab ? (() => {
                   const tab = tabs.find(t => t.tableId === selectedTab);
                   return tab?.tableName.includes('Bar Tab') ? 
@@ -497,43 +504,43 @@ export default function BartenderPage() {
                     if (drinkItems.length === 0) return null;
                     
                     return (
-                      <div key={order.id} className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/30 transition-all duration-300">
+                      <Card key={order.id} className="hover:shadow-medium transition-all duration-300">
                         <div className="flex justify-between items-start mb-4">
                           <div>
-                            <h3 className="text-sm font-light text-rose-900">
+                            <h3 className="text-sm font-medium text-foreground">
                               {order.table?.name ? `Table ${order.table.name}` : 
                                 (order.special_instructions?.includes('Bar tab for') ? 
                                   order.special_instructions.replace('Bar tab for ', '') : 'Bar Tab')} - #{order.id.slice(-6)}
                             </h3>
-                            <p className="text-xs text-rose-500 font-light">{getOrderAge(order.created_at)}</p>
+                            <p className="text-xs text-muted">{getOrderAge(order.created_at)}</p>
                           </div>
-                          <div className={`px-3 py-1 rounded-full text-xs font-light ${
-                            order.status === 'PENDING' ? 'bg-orange-200/50 text-orange-800' :
-                            order.status === 'PREPARING' ? 'bg-blue-200/50 text-blue-800' :
-                            order.status === 'READY' ? 'bg-green-200/50 text-green-800' :
-                            'bg-rose-200/50 text-rose-800'
-                          }`}>
+                          <Badge variant={
+                            order.status === 'PENDING' ? 'warning' :
+                            order.status === 'PREPARING' ? 'default' :
+                            order.status === 'READY' ? 'success' :
+                            'secondary'
+                          }>
                             {order.status.charAt(0) + order.status.slice(1).toLowerCase()}
-                          </div>
+                          </Badge>
                         </div>
                         
                         <div className="space-y-3 mb-6">
                           {drinkItems.map((item) => (
-                            <div key={item.id} className="flex justify-between items-center">
+                            <div key={item.id} className="flex justify-between items-center p-3 bg-surface rounded-lg">
                               <div className="flex items-center space-x-3">
-                                <span className="w-7 h-7 bg-rose-200/50 rounded-full flex items-center justify-center text-xs font-light text-rose-900">
+                                <Badge variant="secondary" size="sm">
                                   {item.quantity}
-                                </span>
+                                </Badge>
                                 <div>
-                                  <div className="text-sm font-light text-rose-900">{item.menu_item.name}</div>
+                                  <div className="text-sm font-medium text-foreground">{item.menu_item.name}</div>
                                   {item.special_instructions && (
-                                    <div className="text-xs text-red-600 mt-1 font-light">
+                                    <div className="text-xs text-error mt-1">
                                       Note: {item.special_instructions}
                                     </div>
                                   )}
                                 </div>
                               </div>
-                              <div className="text-sm font-light text-rose-900">
+                              <div className="text-sm font-medium text-foreground">
                                 ${(item.price * item.quantity).toFixed(2)}
                               </div>
                             </div>
@@ -542,117 +549,123 @@ export default function BartenderPage() {
                         
                         <div className="flex justify-end space-x-3">
                           {order.status === 'PENDING' && (
-                            <button
+                            <Button
                               onClick={() => updateOrderStatus(order.id, 'PREPARING')}
+                              loading={updatingOrder === order.id}
                               disabled={updatingOrder === order.id}
-                              className="bg-blue-200/50 text-blue-800 px-4 py-2 rounded-full text-xs font-light hover:bg-blue-300/50 transition-all duration-300 disabled:opacity-50 border-0"
+                              size="sm"
                             >
                               Start Preparing
-                            </button>
+                            </Button>
                           )}
                           
                           {order.status === 'PREPARING' && (
                             <div className="flex space-x-3">
-                              <button
+                              <Button
                                 onClick={() => updateOrderStatus(order.id, 'READY')}
+                                loading={updatingOrder === order.id}
                                 disabled={updatingOrder === order.id}
-                                className="bg-green-200/50 text-green-800 px-4 py-2 rounded-full text-xs font-light hover:bg-green-300/50 transition-all duration-300 disabled:opacity-50 border-0"
+                                variant="success"
+                                size="sm"
                               >
                                 Mark Ready
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 onClick={() => updateOrderStatus(order.id, 'PENDING')}
                                 disabled={updatingOrder === order.id}
-                                className="bg-rose-200/50 text-rose-800 px-4 py-2 rounded-full text-xs font-light hover:bg-rose-300/50 transition-all duration-300 disabled:opacity-50 border-0"
+                                variant="secondary"
+                                size="sm"
                               >
                                 Back
-                              </button>
+                              </Button>
                             </div>
                           )}
                           
                           {order.status === 'READY' && (
                             <div className="flex space-x-3">
-                              <button
+                              <Button
                                 onClick={() => updateOrderStatus(order.id, 'COMPLETED')}
+                                loading={updatingOrder === order.id}
                                 disabled={updatingOrder === order.id}
-                                className="bg-green-200/50 text-green-800 px-4 py-2 rounded-full text-xs font-light hover:bg-green-300/50 transition-all duration-300 disabled:opacity-50 border-0"
+                                variant="success"
+                                size="sm"
                               >
                                 Complete
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 onClick={() => updateOrderStatus(order.id, 'PREPARING')}
                                 disabled={updatingOrder === order.id}
-                                className="bg-rose-200/50 text-rose-800 px-4 py-2 rounded-full text-xs font-light hover:bg-rose-300/50 transition-all duration-300 disabled:opacity-50 border-0"
+                                variant="secondary"
+                                size="sm"
                               >
                                 Back
-                              </button>
+                              </Button>
                             </div>
                           )}
                         </div>
-                      </div>
+                      </Card>
                     );
                   })}
                 
                 {filteredOrders.filter(order => selectedTab ? (order.table_id === selectedTab || order.customer_session === selectedTab) : true).length === 0 && (
                   <div className="text-center py-16">
-                    <Wine className="h-12 w-12 text-rose-300 mx-auto mb-6" />
-                    <h3 className="text-sm font-light text-rose-900 mb-2">No Drink Orders</h3>
-                    <p className="text-xs text-rose-500 font-light">All caught up! New drink orders will appear here.</p>
+                    <Wine className="h-12 w-12 text-muted mx-auto mb-6" />
+                    <h3 className="text-lg font-medium text-foreground mb-2">No Drink Orders</h3>
+                    <p className="text-muted">All caught up! New drink orders will appear here.</p>
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
           </div>
-        </div>
-      </div>
+        </Grid>
+      </Container>
 
       {/* Create New Tab Modal */}
       {showCreateTab && (
-        <div className="fixed inset-0 bg-rose-100/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white/80 backdrop-blur-md w-full max-w-md rounded-3xl max-h-[90vh] overflow-hidden border-0 shadow-2xl">
-            <div className="p-6 border-b border-rose-200/50">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-xl max-h-[90vh] overflow-hidden shadow-large">
+            <div className="p-6 border-b border-border">
               <div className="flex justify-between items-center">
-                <h2 className="text-sm font-light text-rose-900">Create New Tab</h2>
-                <button
+                <h2 className="text-lg font-medium text-foreground">Create New Tab</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setShowCreateTab(false)}
-                  className="text-rose-400 hover:text-rose-600 p-1 border-0"
                 >
                   <X className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
             
             <div className="p-6 max-h-96 overflow-y-auto">
               {/* Customer Name */}
               <div className="mb-6">
-                <label className="block text-xs font-light text-rose-700 mb-2">
-                  Customer Name
-                </label>
-                <input
-                  type="text"
+                <Input
+                  label="Customer Name"
                   value={newTabCustomer}
                   onChange={(e) => setNewTabCustomer(e.target.value)}
                   placeholder="Enter customer name..."
-                  className="w-full px-4 py-3 bg-rose-50/50 backdrop-blur-sm rounded-2xl text-sm text-rose-900 placeholder-rose-400 focus:outline-none focus:bg-rose-50 transition-all duration-300 border-0"
+                  fullWidth
                 />
               </div>
 
               {/* Available Drinks */}
               <div className="mb-6">
-                <h3 className="text-xs font-light text-rose-700 mb-3">Available Drinks</h3>
+                <h3 className="text-sm font-medium text-foreground mb-3">Available Drinks</h3>
                 <div className="space-y-3 max-h-40 overflow-y-auto">
                   {availableDrinks.map((drink) => (
-                    <div key={drink.id} className="flex justify-between items-center p-3 bg-rose-50/30 backdrop-blur-sm rounded-2xl">
+                    <div key={drink.id} className="flex justify-between items-center p-3 bg-surface rounded-lg">
                       <div className="flex-1">
-                        <div className="text-sm font-light text-rose-900">{drink.name}</div>
-                        <div className="text-xs text-rose-500 font-light">${drink.price.toFixed(2)}</div>
+                        <div className="text-sm font-medium text-foreground">{drink.name}</div>
+                        <div className="text-xs text-muted">${drink.price.toFixed(2)}</div>
                       </div>
-                      <button
+                      <Button
+                        size="sm"
+                        variant="ghost"
                         onClick={() => addDrinkToTab(drink)}
-                        className="w-7 h-7 bg-rose-200/50 rounded-full flex items-center justify-center hover:bg-rose-300/50 hover:text-rose-900 transition-all duration-300 border-0"
                       >
-                        <Plus className="h-3 w-3" />
-                      </button>
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -661,30 +674,32 @@ export default function BartenderPage() {
               {/* Selected Drinks */}
               {selectedDrinks.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="text-xs font-light text-rose-700 mb-3">Selected Drinks</h3>
+                  <h3 className="text-sm font-medium text-foreground mb-3">Selected Drinks</h3>
                   <div className="space-y-3">
                     {selectedDrinks.map((drink) => {
                       const drinkData = availableDrinks.find(d => d.id === drink.id);
                       return (
-                        <div key={drink.id} className="flex justify-between items-center p-3 bg-rose-100/50 backdrop-blur-sm rounded-2xl">
+                        <div key={drink.id} className="flex justify-between items-center p-3 bg-surface rounded-lg">
                           <div className="flex-1">
-                            <div className="text-sm font-light text-rose-900">{drinkData?.name}</div>
-                            <div className="text-xs text-rose-500 font-light">${drink.price.toFixed(2)} × {drink.quantity}</div>
+                            <div className="text-sm font-medium text-foreground">{drinkData?.name}</div>
+                            <div className="text-xs text-muted">${drink.price.toFixed(2)} × {drink.quantity}</div>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <button
+                            <Button
+                              size="sm"
+                              variant="ghost"
                               onClick={() => removeDrinkFromTab(drink.id)}
-                              className="w-6 h-6 bg-rose-200/50 rounded-full flex items-center justify-center hover:bg-rose-300/50 transition-all duration-300 border-0"
                             >
-                              <Minus className="h-3 w-3" />
-                            </button>
-                            <span className="w-6 text-center text-xs font-light text-rose-900">{drink.quantity}</span>
-                            <button
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <span className="w-6 text-center text-sm font-medium text-foreground">{drink.quantity}</span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
                               onClick={() => addDrinkToTab(drinkData)}
-                              className="w-6 h-6 bg-rose-200/50 rounded-full flex items-center justify-center hover:bg-rose-300/50 transition-all duration-300 border-0"
                             >
-                              <Plus className="h-3 w-3" />
-                            </button>
+                              <Plus className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
                       );
@@ -694,29 +709,31 @@ export default function BartenderPage() {
               )}
             </div>
             
-            <div className="p-6 border-t border-rose-200/50">
+            <div className="p-6 border-t border-border">
               <div className="flex justify-between items-center mb-6">
-                <span className="text-sm font-light text-rose-900">Total:</span>
-                <span className="text-sm font-medium text-rose-900">${getTabTotal().toFixed(2)}</span>
+                <span className="text-sm font-medium text-foreground">Total:</span>
+                <span className="text-sm font-medium text-foreground">${getTabTotal().toFixed(2)}</span>
               </div>
               <div className="space-y-3">
-                <button
+                <Button
                   onClick={createManualTab}
                   disabled={!newTabCustomer.trim() || selectedDrinks.length === 0 || loading}
-                  className="w-full bg-rose-300 text-rose-900 px-6 py-4 rounded-full text-sm font-light hover:bg-rose-400 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed border-0"
+                  loading={loading}
+                  fullWidth
                 >
                   {loading ? 'Creating...' : 'Create Tab'}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
                   onClick={() => {
                     setNewTabCustomer('');
                     setSelectedDrinks([]);
                     setShowCreateTab(false);
                   }}
-                  className="w-full bg-rose-100 text-rose-700 px-6 py-3 rounded-full text-sm font-light hover:bg-rose-200 transition-all duration-300 border-0"
+                  fullWidth
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           </div>

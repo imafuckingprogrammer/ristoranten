@@ -9,7 +9,11 @@ import { useAppStore } from '@/lib/store';
 import { Restaurant, Category, MenuItem, CartItem } from '@/lib/types';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
-import { Plus, Minus, ShoppingCart, Search, AlertCircle, CheckCircle } from 'lucide-react';
+import Container from '@/components/ui/Container';
+import Grid from '@/components/ui/Grid';
+import Badge from '@/components/ui/Badge';
+import { LoadingScreen } from '@/components/ui/LoadingSpinner';
+import { Plus, Minus, ShoppingCart, Search, AlertCircle, CheckCircle, Star } from 'lucide-react';
 
 export default function OrderPage() {
   const params = useParams();
@@ -208,31 +212,40 @@ export default function OrderPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-rose-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-rose-300 mx-auto"></div>
-          <p className="mt-3 text-xs text-rose-400">Loading menu...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message="Loading menu..." />;
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-rose-50">
-        <div className="text-center max-w-md mx-auto p-6">
-          <AlertCircle className="h-8 w-8 text-rose-400 mx-auto mb-3" />
-          <h2 className="text-sm font-medium text-rose-900 mb-2">Unable to Load Menu</h2>
-          <p className="text-xs text-rose-600 mb-3">{error}</p>
-          <p className="text-xs text-rose-400">Please ask your server for assistance or scan a new QR code.</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Container size="sm">
+          <motion.div 
+            className="text-center max-w-md mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Card className="text-center">
+              <AlertCircle className="h-12 w-12 text-error mx-auto mb-4" />
+              <h2 className="text-lg font-medium text-foreground mb-2">Unable to Load Menu</h2>
+              <p className="text-sm text-muted mb-4">{error}</p>
+              <p className="text-sm text-muted">Please ask your server for assistance or scan a new QR code.</p>
+            </Card>
+          </motion.div>
+        </Container>
       </div>
     );
   }
 
+  // Create CSS custom properties for brand color
+  const brandColor = restaurant?.primary_color || '#1a1a1a';
+  const brandStyles = {
+    '--brand-color': brandColor,
+    '--brand-color-rgb': brandColor.replace('#', '').match(/.{2}/g)?.map(x => parseInt(x, 16)).join(', ') || '26, 26, 26'
+  } as React.CSSProperties;
+
   return (
-    <div className="min-h-screen bg-rose-50">
+    <div className="min-h-screen bg-background" style={brandStyles}>
       {/* Success Banner */}
       <AnimatePresence>
         {orderPlaced && (
@@ -240,12 +253,14 @@ export default function OrderPage() {
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 bg-rose-400 text-white p-3 z-50"
+            className="fixed top-0 left-0 right-0 bg-success text-white p-4 z-50 shadow-large"
           >
-            <div className="max-w-4xl mx-auto flex items-center justify-center">
-              <CheckCircle className="h-4 w-4 mr-2" />
-              <span className="text-xs font-medium">Order placed successfully! Your food is being prepared.</span>
-            </div>
+            <Container>
+              <div className="flex items-center justify-center">
+                <CheckCircle className="h-5 w-5 mr-2" />
+                <span className="font-medium">Order placed successfully! Your food is being prepared.</span>
+              </div>
+            </Container>
           </motion.div>
         )}
       </AnimatePresence>
@@ -253,10 +268,10 @@ export default function OrderPage() {
       {/* Ultra Minimal Header */}
       <div className="bg-white/60 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-6 py-8">
-          <h1 className="text-lg font-light text-rose-900">{restaurant?.name}</h1>
-          <p className="text-xs text-rose-500 mt-1">Table {tableInfo?.name}</p>
+          <h1 className="text-lg font-light text-foreground">{restaurant?.name}</h1>
+          <p className="text-xs text-muted mt-1">Table {tableInfo?.name}</p>
           {restaurant?.description && (
-            <p className="text-xs text-rose-400 mt-2 font-light">{restaurant.description}</p>
+            <p className="text-xs text-muted mt-2 font-light">{restaurant.description}</p>
           )}
         </div>
       </div>
@@ -266,13 +281,13 @@ export default function OrderPage() {
         <div className="mb-8">
           <div className="flex flex-col gap-6">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-rose-300" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted" />
               <input
                 type="text"
                 placeholder="Search menu..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 bg-white/70 backdrop-blur-sm rounded-full text-sm text-rose-900 placeholder-rose-300 focus:outline-none focus:bg-white/90 transition-all duration-300 border-0"
+                className="w-full pl-12 pr-4 py-4 bg-white/70 backdrop-blur-sm rounded-full text-sm text-foreground placeholder-muted focus:outline-none focus:bg-white/90 transition-all duration-300 border-0"
               />
             </div>
             <div className="flex flex-wrap gap-2 justify-center">
@@ -280,9 +295,10 @@ export default function OrderPage() {
                 onClick={() => setSelectedCategory('all')}
                 className={`px-4 py-2 rounded-full text-xs font-light transition-all duration-300 ${
                   selectedCategory === 'all'
-                    ? 'bg-rose-200 text-rose-900'
-                    : 'bg-white/50 text-rose-600 hover:bg-white/80'
+                    ? 'text-white'
+                    : 'bg-white/50 text-foreground hover:bg-white/80'
                 }`}
+                style={selectedCategory === 'all' ? { backgroundColor: 'var(--brand-color)' } : {}}
               >
                 All
               </button>
@@ -292,9 +308,10 @@ export default function OrderPage() {
                   onClick={() => setSelectedCategory(category.id)}
                   className={`px-4 py-2 rounded-full text-xs font-light transition-all duration-300 ${
                     selectedCategory === category.id
-                      ? 'bg-rose-200 text-rose-900'
-                      : 'bg-white/50 text-rose-600 hover:bg-white/80'
+                      ? 'text-white'
+                      : 'bg-white/50 text-foreground hover:bg-white/80'
                   }`}
+                  style={selectedCategory === category.id ? { backgroundColor: 'var(--brand-color)' } : {}}
                 >
                   {category.name}
                 </button>
@@ -307,17 +324,17 @@ export default function OrderPage() {
         <div className="space-y-12">
           {Object.entries(groupedMenuItems).map(([categoryId, { category, items }]) => (
             <div key={categoryId}>
-              <h2 className="text-sm font-light text-rose-800 mb-6 text-center tracking-wider uppercase">{category.name}</h2>
+              <h2 className="text-sm font-light text-foreground mb-6 text-center tracking-wider uppercase">{category.name}</h2>
               <div className="space-y-3">
                 {items.map((item) => (
                   <div key={item.id} className="bg-white/40 backdrop-blur-sm rounded-2xl p-6 hover:bg-white/60 transition-all duration-300">
                     <div className="flex justify-between items-center">
                       <div className="flex-1">
-                        <h3 className="font-light text-rose-900 text-sm">{item.name}</h3>
+                        <h3 className="font-light text-foreground text-sm">{item.name}</h3>
                         {item.description && (
-                          <p className="text-xs text-rose-500 mt-1 font-light">{item.description}</p>
+                          <p className="text-xs text-muted mt-1 font-light">{item.description}</p>
                         )}
-                        <div className="text-xs text-rose-600 mt-2">${item.price.toFixed(2)}</div>
+                        <div className="text-xs text-foreground mt-2">${item.price.toFixed(2)}</div>
                       </div>
                       
                       <div className="ml-6">
@@ -325,24 +342,27 @@ export default function OrderPage() {
                           <div className="flex items-center space-x-3">
                             <button
                               onClick={() => removeItemFromCart(item)}
-                              className="w-8 h-8 bg-rose-100 rounded-full flex items-center justify-center hover:bg-rose-200 transition-all duration-300 border-0"
+                              className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300 border-0"
+                              style={{ backgroundColor: 'rgba(var(--brand-color-rgb), 0.1)' }}
                             >
-                              <Minus className="h-3 w-3 text-rose-600" />
+                              <Minus className="h-3 w-3" style={{ color: 'var(--brand-color)' }} />
                             </button>
-                            <span className="w-6 text-center font-light text-rose-900 text-sm">
+                            <span className="w-6 text-center font-light text-foreground text-sm">
                               {getItemQuantityInCart(item.id)}
                             </span>
                             <button
                               onClick={() => addItemToCart(item)}
-                              className="w-8 h-8 bg-rose-100 rounded-full flex items-center justify-center hover:bg-rose-200 transition-all duration-300 border-0"
+                              className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300 border-0"
+                              style={{ backgroundColor: 'rgba(var(--brand-color-rgb), 0.1)' }}
                             >
-                              <Plus className="h-3 w-3 text-rose-600" />
+                              <Plus className="h-3 w-3" style={{ color: 'var(--brand-color)' }} />
                             </button>
                           </div>
                         ) : (
                           <button
                             onClick={() => addItemToCart(item)}
-                            className="bg-rose-200 text-rose-900 px-4 py-2 rounded-full text-xs font-light hover:bg-rose-300 transition-all duration-300 border-0"
+                            className="px-4 py-2 rounded-full text-xs font-light hover:opacity-80 transition-all duration-300 border-0 text-white"
+                            style={{ backgroundColor: 'var(--brand-color)' }}
                           >
                             Add
                           </button>
@@ -358,9 +378,9 @@ export default function OrderPage() {
         
         {filteredMenuItems.length === 0 && (
           <div className="text-center py-16">
-            <Search className="h-8 w-8 text-rose-300 mx-auto mb-4" />
-            <h3 className="text-xs font-light text-rose-700 mb-2">No items found</h3>
-            <p className="text-xs text-rose-400">Try adjusting your search</p>
+            <Search className="h-8 w-8 text-muted mx-auto mb-4" />
+            <h3 className="text-xs font-light text-foreground mb-2">No items found</h3>
+            <p className="text-xs text-muted">Try adjusting your search</p>
           </div>
         )}
       </div>
@@ -370,7 +390,8 @@ export default function OrderPage() {
         <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-40">
           <button
             onClick={() => setShowCart(true)}
-            className="bg-rose-300 text-rose-900 px-6 py-4 rounded-full shadow-lg text-xs font-light hover:bg-rose-400 transition-all duration-300 border-0 backdrop-blur-sm"
+            className="px-6 py-4 rounded-full shadow-lg text-xs font-light hover:opacity-90 transition-all duration-300 border-0 backdrop-blur-sm text-white"
+            style={{ backgroundColor: 'var(--brand-color)' }}
           >
             <ShoppingCart className="h-4 w-4 mr-2 inline" />
             {getTotalItems()} items • ${getTotalPrice().toFixed(2)}
@@ -380,14 +401,14 @@ export default function OrderPage() {
 
       {/* Ultra Minimal Cart Modal */}
       {showCart && (
-        <div className="fixed inset-0 bg-rose-100/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white/80 backdrop-blur-md w-full sm:max-w-md rounded-3xl max-h-[90vh] overflow-hidden border-0 shadow-2xl">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-sm font-light text-rose-900">Your Order</h2>
+                <h2 className="text-sm font-light text-foreground">Your Order</h2>
                 <button
                   onClick={() => setShowCart(false)}
-                  className="text-rose-400 hover:text-rose-600 p-1 border-0"
+                  className="text-muted hover:text-foreground p-1 border-0"
                 >
                   ×
                 </button>
@@ -396,24 +417,26 @@ export default function OrderPage() {
               <div className="max-h-64 overflow-y-auto">
                 <div className="space-y-4">
                   {cart.map((item) => (
-                    <div key={item.menu_item.id} className="flex justify-between items-center bg-rose-50/50 rounded-2xl p-4">
+                    <div key={item.menu_item.id} className="flex justify-between items-center bg-white/50 rounded-2xl p-4">
                       <div className="flex-1">
-                        <h3 className="text-xs font-light text-rose-900">{item.menu_item.name}</h3>
-                        <p className="text-xs text-rose-500">${item.menu_item.price.toFixed(2)} each</p>
+                        <h3 className="text-xs font-light text-foreground">{item.menu_item.name}</h3>
+                        <p className="text-xs text-muted">${item.menu_item.price.toFixed(2)} each</p>
                       </div>
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => removeItemFromCart(item.menu_item)}
-                          className="w-6 h-6 bg-rose-200 rounded-full flex items-center justify-center hover:bg-rose-300 transition-all duration-300 border-0"
+                          className="w-6 h-6 rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300 border-0"
+                          style={{ backgroundColor: 'rgba(var(--brand-color-rgb), 0.1)' }}
                         >
-                          <Minus className="h-3 w-3 text-rose-700" />
+                          <Minus className="h-3 w-3" style={{ color: 'var(--brand-color)' }} />
                         </button>
-                        <span className="w-4 text-center text-xs font-light text-rose-900">{item.quantity}</span>
+                        <span className="w-4 text-center text-xs font-light text-foreground">{item.quantity}</span>
                         <button
                           onClick={() => addItemToCart(item.menu_item)}
-                          className="w-6 h-6 bg-rose-200 rounded-full flex items-center justify-center hover:bg-rose-300 transition-all duration-300 border-0"
+                          className="w-6 h-6 rounded-full flex items-center justify-center hover:opacity-80 transition-all duration-300 border-0"
+                          style={{ backgroundColor: 'rgba(var(--brand-color-rgb), 0.1)' }}
                         >
-                          <Plus className="h-3 w-3 text-rose-700" />
+                          <Plus className="h-3 w-3" style={{ color: 'var(--brand-color)' }} />
                         </button>
                       </div>
                     </div>
@@ -422,14 +445,14 @@ export default function OrderPage() {
                 
                 {/* Special Instructions */}
                 <div className="mt-6">
-                  <label className="block text-xs font-light text-rose-700 mb-2">
+                  <label className="block text-xs font-light text-foreground mb-2">
                     Special Instructions
                   </label>
                   <textarea
                     value={specialInstructions}
                     onChange={(e) => setSpecialInstructions(e.target.value)}
                     rows={3}
-                    className="w-full px-4 py-3 bg-rose-50/50 rounded-2xl text-xs text-rose-900 placeholder-rose-400 focus:outline-none focus:bg-rose-50 transition-all duration-300 border-0"
+                    className="w-full px-4 py-3 bg-white/50 rounded-2xl text-xs text-foreground placeholder-muted focus:outline-none focus:bg-white/80 transition-all duration-300 border-0"
                     placeholder="Any special requests..."
                   />
                 </div>
@@ -437,14 +460,15 @@ export default function OrderPage() {
               
               <div className="mt-6 pt-6">
                 <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm font-light text-rose-900">Total:</span>
-                  <span className="text-sm font-medium text-rose-900">${getTotalPrice().toFixed(2)}</span>
+                  <span className="text-sm font-light text-foreground">Total:</span>
+                  <span className="text-sm font-medium text-foreground">${getTotalPrice().toFixed(2)}</span>
                 </div>
                 <div className="space-y-3">
                   <button
                     onClick={placeOrder}
                     disabled={placingOrder}
-                    className="w-full bg-rose-300 text-rose-900 px-6 py-4 rounded-full text-xs font-light hover:bg-rose-400 transition-all duration-300 disabled:opacity-50 border-0"
+                    className="w-full px-6 py-4 rounded-full text-xs font-light hover:opacity-90 transition-all duration-300 disabled:opacity-50 border-0 text-white"
+                    style={{ backgroundColor: 'var(--brand-color)' }}
                   >
                     {placingOrder ? 'Placing Order...' : 'Place Order'}
                   </button>
@@ -453,7 +477,7 @@ export default function OrderPage() {
                       clearCart();
                       setShowCart(false);
                     }}
-                    className="w-full bg-rose-100 text-rose-700 px-6 py-3 rounded-full text-xs font-light hover:bg-rose-200 transition-all duration-300 border-0"
+                    className="w-full bg-white/50 text-foreground px-6 py-3 rounded-full text-xs font-light hover:bg-white/80 transition-all duration-300 border-0"
                   >
                     Clear Cart
                   </button>

@@ -11,8 +11,8 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className = '', label, error, fullWidth = false, ...props }, ref) => {
-    const baseClasses = 'px-4 py-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 bg-white text-black placeholder:text-gray-500';
-    const errorClasses = error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : '';
+    const baseClasses = 'px-4 py-3 border border-border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:border-accent transition-all duration-200 bg-white text-foreground placeholder:text-muted shadow-soft hover:shadow-medium';
+    const errorClasses = error ? 'border-error focus-visible:ring-error focus-visible:border-error' : '';
     const widthClasses = fullWidth ? 'w-full' : '';
     
     const classes = [
@@ -25,12 +25,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <motion.div 
         className={fullWidth ? 'w-full' : ''}
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
       >
         {label && (
-          <label className="block text-sm font-semibold text-black mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             {label}
           </label>
         )}
@@ -43,7 +43,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <motion.p 
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="mt-2 text-sm text-red-600 font-medium"
+            transition={{ duration: 0.15 }}
+            className="mt-2 text-sm text-error font-medium"
           >
             {error}
           </motion.p>

@@ -32,6 +32,11 @@ export default function StaffPage() {
     email: '',
     role: 'WAITSTAFF' as UserRole,
   });
+  const [createdStaffCredentials, setCreatedStaffCredentials] = useState<{
+    email: string;
+    temp_password: string;
+    login_url: string;
+  } | null>(null);
   
   const router = useRouter();
   const supabase = createClient();
@@ -97,7 +102,12 @@ export default function StaffPage() {
       setNewStaff({ email: '', role: 'WAITSTAFF' });
       setShowAddStaff(false);
       
-      alert(`Staff member created successfully! They will receive login instructions at ${newStaff.email}`);
+      // Store credentials for display
+      setCreatedStaffCredentials({
+        email: staffUser.email,
+        temp_password: staffUser.temp_password,
+        login_url: staffUser.login_url
+      });
     } catch (error: any) {
       console.error('Error adding staff:', error);
       alert(`Failed to create staff member: ${error.message}`);
@@ -400,6 +410,112 @@ export default function StaffPage() {
           </div>
         </Card>
       </div>
+
+      {/* Staff Credentials Modal */}
+      {createdStaffCredentials && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-medium text-foreground">Staff Member Created</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCreatedStaffCredentials(null)}
+              >
+                ×
+              </Button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Email:
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={createdStaffCredentials.email}
+                    readOnly
+                    fullWidth
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigator.clipboard.writeText(createdStaffCredentials.email)}
+                  >
+                    Copy
+                  </Button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Temporary Password:
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={createdStaffCredentials.temp_password}
+                    readOnly
+                    fullWidth
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigator.clipboard.writeText(createdStaffCredentials.temp_password)}
+                  >
+                    Copy
+                  </Button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Login URL:
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={createdStaffCredentials.login_url}
+                    readOnly
+                    fullWidth
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigator.clipboard.writeText(createdStaffCredentials.login_url)}
+                  >
+                    Copy
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="bg-warning/10 border border-warning/20 rounded-lg p-4 mt-4">
+                <p className="text-sm text-warning-foreground">
+                  <strong>Important:</strong> Share these credentials with the staff member. 
+                  They should change their password on first login.
+                </p>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <Button
+                  onClick={() => {
+                    const credentials = `Email: ${createdStaffCredentials.email}\nPassword: ${createdStaffCredentials.temp_password}\nLogin: ${createdStaffCredentials.login_url}`;
+                    navigator.clipboard.writeText(credentials);
+                  }}
+                  fullWidth
+                >
+                  Copy All Credentials
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setCreatedStaffCredentials(null)}
+                  fullWidth
+                >
+                  Done
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

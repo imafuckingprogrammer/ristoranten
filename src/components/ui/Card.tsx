@@ -5,13 +5,13 @@ import { motion } from 'framer-motion';
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   padding?: 'none' | 'sm' | 'md' | 'lg';
-  shadow?: 'none' | 'sm' | 'md' | 'lg';
+  shadow?: 'none' | 'soft' | 'medium' | 'large';
   hover?: boolean;
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className = '', padding = 'md', shadow = 'sm', hover = true, children, ...props }, ref) => {
-    const baseClasses = 'bg-white border border-black rounded-lg transition-all duration-200';
+  ({ className = '', padding = 'md', shadow = 'soft', hover = true, children, ...props }, ref) => {
+    const baseClasses = 'bg-white border border-border rounded-lg transition-all duration-200';
     
     const paddingClasses = {
       none: '',
@@ -22,26 +22,28 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     
     const shadowClasses = {
       none: '',
-      sm: 'shadow-sm',
-      md: 'shadow-md',
-      lg: 'shadow-lg',
+      soft: 'shadow-soft',
+      medium: 'shadow-medium',
+      large: 'shadow-large',
     };
     
     const classes = [
       baseClasses,
       paddingClasses[padding],
       shadowClasses[shadow],
-      hover ? 'hover:shadow-lg hover:border-2' : '',
+      hover ? 'hover:shadow-medium hover:-translate-y-0.5' : '',
       className,
     ].join(' ');
+    
+    const { onAnimationStart, onAnimationEnd, onAnimationIteration, ...restProps } = props;
     
     return (
       <motion.div 
         ref={ref} 
         className={classes} 
-        whileHover={hover ? { y: -2 } : {}}
-        transition={{ duration: 0.2 }}
-        {...props}
+        whileHover={hover ? { y: -1 } : {}}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
+        {...restProps}
       >
         {children}
       </motion.div>

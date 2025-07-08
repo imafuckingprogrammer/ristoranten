@@ -6,6 +6,8 @@ import { useAppStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import Container from '@/components/ui/Container';
+import Grid from '@/components/ui/Grid';
 import { LoadingScreen } from '@/components/ui/LoadingSpinner';
 import { 
   ArrowLeft, 
@@ -154,161 +156,159 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-rose-50">
-      {/* Ultra Minimal Header */}
-      <div className="bg-white/60 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-white border-b border-border">
+        <Container>
+          <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-4">
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => router.push('/dashboard')}
-                className="text-rose-600 hover:text-rose-900 px-3 py-2 text-xs font-light transition-all duration-300 rounded-full hover:bg-rose-100"
               >
-                <ArrowLeft className="h-3 w-3 mr-1 inline" />
+                <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
-              </button>
+              </Button>
               <div>
-                <h1 className="text-lg font-light text-rose-900">Analytics</h1>
-                <p className="text-xs text-rose-500">{restaurant?.name}</p>
+                <h1 className="text-xl font-medium text-foreground">Analytics</h1>
+                <p className="text-sm text-muted">{restaurant?.name}</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-2">
               {(['today', 'week', 'month', 'all'] as const).map((range) => (
-                <button
+                <Button
                   key={range}
+                  variant={timeRange === range ? 'primary' : 'ghost'}
+                  size="sm"
                   onClick={() => setTimeRange(range)}
-                  className={`px-3 py-2 rounded-full text-xs font-light transition-all duration-300 border-0 ${
-                    timeRange === range 
-                      ? 'bg-rose-300 text-rose-900' 
-                      : 'bg-white/50 text-rose-600 hover:bg-white/70'
-                  }`}
                 >
                   {range.charAt(0).toUpperCase() + range.slice(1)}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
-        </div>
-      </div>
+        </Container>
+      </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-6">
+      <Container className="py-8">
         {analytics ? (
           <div className="space-y-8">
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
+            <Grid cols={4} gap="lg">
+              <Card>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-rose-200 to-rose-300 rounded-full flex items-center justify-center mr-4">
-                    <ShoppingBag className="h-5 w-5 text-rose-800" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-accent/20 to-accent/30 rounded-full flex items-center justify-center mr-4">
+                    <ShoppingBag className="h-5 w-5 text-accent" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-light text-rose-700 tracking-wide">Total Orders</h3>
-                    <p className="text-lg font-light text-rose-900">{analytics.totalOrders}</p>
+                    <h3 className="text-xs font-light text-muted tracking-wide">Total Orders</h3>
+                    <p className="text-lg font-light text-foreground">{analytics.totalOrders}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
               
-              <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
+              <Card>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-rose-200 to-rose-300 rounded-full flex items-center justify-center mr-4">
-                    <DollarSign className="h-5 w-5 text-rose-800" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-accent/20 to-accent/30 rounded-full flex items-center justify-center mr-4">
+                    <DollarSign className="h-5 w-5 text-accent" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-light text-rose-700 tracking-wide">Revenue</h3>
-                    <p className="text-lg font-light text-rose-900">${analytics.totalRevenue.toFixed(2)}</p>
+                    <h3 className="text-xs font-light text-muted tracking-wide">Revenue</h3>
+                    <p className="text-lg font-light text-foreground">${analytics.totalRevenue.toFixed(2)}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
               
-              <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
+              <Card>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-rose-200 to-rose-300 rounded-full flex items-center justify-center mr-4">
-                    <TrendingUp className="h-5 w-5 text-rose-800" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-accent/20 to-accent/30 rounded-full flex items-center justify-center mr-4">
+                    <TrendingUp className="h-5 w-5 text-accent" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-light text-rose-700 tracking-wide">Avg Order Value</h3>
-                    <p className="text-lg font-light text-rose-900">${analytics.averageOrderValue.toFixed(2)}</p>
+                    <h3 className="text-xs font-light text-muted tracking-wide">Avg Order Value</h3>
+                    <p className="text-lg font-light text-foreground">${analytics.averageOrderValue.toFixed(2)}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
               
-              <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
+              <Card>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-rose-200 to-rose-300 rounded-full flex items-center justify-center mr-4">
-                    <Users className="h-5 w-5 text-rose-800" />
+                  <div className="w-12 h-12 bg-gradient-to-br from-accent/20 to-accent/30 rounded-full flex items-center justify-center mr-4">
+                    <Users className="h-5 w-5 text-accent" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-light text-rose-700 tracking-wide">Customers</h3>
-                    <p className="text-lg font-light text-rose-900">{analytics.totalCustomers}</p>
+                    <h3 className="text-xs font-light text-muted tracking-wide">Customers</h3>
+                    <p className="text-lg font-light text-foreground">{analytics.totalCustomers}</p>
                   </div>
                 </div>
-              </div>
-            </div>
+              </Card>
+            </Grid>
 
             {/* Today's Performance */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
-                <h3 className="text-xs font-light text-rose-700 tracking-wide mb-6 uppercase">Today's Performance</h3>
+            <Grid cols={1} gap="lg" className="md:grid-cols-2">
+              <Card>
+                <h3 className="text-xs font-light text-muted tracking-wide mb-6 uppercase">Today's Performance</h3>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-rose-600 font-light">Orders</span>
-                    <span className="text-sm font-light text-rose-900">{analytics.todayOrders}</span>
+                    <span className="text-sm text-muted font-light">Orders</span>
+                    <span className="text-sm font-light text-foreground">{analytics.todayOrders}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-rose-600 font-light">Revenue</span>
-                    <span className="text-sm font-light text-rose-900">${analytics.todayRevenue.toFixed(2)}</span>
+                    <span className="text-sm text-muted font-light">Revenue</span>
+                    <span className="text-sm font-light text-foreground">${analytics.todayRevenue.toFixed(2)}</span>
                   </div>
                 </div>
-              </div>
+              </Card>
               
-              <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
-                <h3 className="text-xs font-light text-rose-700 tracking-wide mb-6 uppercase">Top Menu Items</h3>
+              <Card>
+                <h3 className="text-xs font-light text-muted tracking-wide mb-6 uppercase">Top Menu Items</h3>
                 <div className="space-y-3">
                   {analytics.topItems.map((item, index) => (
                     <div key={item.name} className="flex justify-between items-center">
                       <div className="flex items-center">
-                        <span className="w-6 h-6 bg-gradient-to-br from-rose-200 to-rose-300 rounded-full flex items-center justify-center text-xs font-light text-rose-900 mr-3">
+                        <span className="w-6 h-6 bg-gradient-to-br from-accent/20 to-accent/30 rounded-full flex items-center justify-center text-xs font-light text-accent mr-3">
                           {index + 1}
                         </span>
-                        <span className="text-sm text-rose-900 font-light">{item.name}</span>
+                        <span className="text-sm text-foreground font-light">{item.name}</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-light text-rose-900">{item.count}</div>
-                        <div className="text-xs text-rose-500 font-light">${item.revenue.toFixed(2)}</div>
+                        <div className="text-sm font-light text-foreground">{item.count}</div>
+                        <div className="text-xs text-muted font-light">${item.revenue.toFixed(2)}</div>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
+              </Card>
+            </Grid>
 
             {/* Recent Orders */}
-            <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
-              <h3 className="text-xs font-light text-rose-700 tracking-wide mb-6 uppercase">Recent Orders</h3>
+            <Card>
+              <h3 className="text-xs font-light text-muted tracking-wide mb-6 uppercase">Recent Orders</h3>
               <div className="space-y-3">
                 {analytics.recentOrders.map((order) => (
-                  <div key={order.id} className="flex justify-between items-center py-3 border-b border-rose-200/30 last:border-b-0">
+                  <div key={order.id} className="flex justify-between items-center py-3 border-b border-border/30 last:border-b-0">
                     <div>
-                      <span className="text-sm font-light text-rose-900">Table {order.table_name}</span>
-                      <span className="text-xs text-rose-500 ml-4 font-light">
+                      <span className="text-sm font-light text-foreground">Table {order.table_name}</span>
+                      <span className="text-xs text-muted ml-4 font-light">
                         {new Date(order.created_at).toLocaleString()}
                       </span>
                     </div>
-                    <span className="text-sm font-light text-rose-900">${order.total.toFixed(2)}</span>
+                    <span className="text-sm font-light text-foreground">${order.total.toFixed(2)}</span>
                   </div>
                 ))}
               </div>
-            </div>
+            </Card>
           </div>
         ) : (
           <div className="text-center py-16">
-            <TrendingUp className="h-12 w-12 text-rose-300 mx-auto mb-6" />
-            <h3 className="text-sm font-light text-rose-900 mb-2">No Data Available</h3>
-            <p className="text-xs text-rose-500 font-light">Start taking orders to see analytics</p>
+            <TrendingUp className="h-12 w-12 text-muted mx-auto mb-6" />
+            <h3 className="text-sm font-light text-foreground mb-2">No Data Available</h3>
+            <p className="text-xs text-muted font-light">Start taking orders to see analytics</p>
           </div>
         )}
-      </div>
+      </Container>
     </div>
   );
 }

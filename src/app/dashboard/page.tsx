@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { signOut } from '@/lib/auth';
 import { createClient } from '@/lib/supabase';
@@ -9,7 +10,10 @@ import { Category, MenuItem } from '@/lib/types';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
-import { Plus, Edit, Trash2, QrCode, Users, BarChart3, Settings } from 'lucide-react';
+import Container from '@/components/ui/Container';
+import Grid from '@/components/ui/Grid';
+import Badge from '@/components/ui/Badge';
+import { Plus, Edit, QrCode, Users, BarChart3, Settings, LogOut } from 'lucide-react';
 import { LoadingScreen } from '@/components/ui/LoadingSpinner';
 
 export default function DashboardPage() {
@@ -159,158 +163,187 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-rose-50">
-      {/* Ultra Minimal Header */}
-      <div className="bg-white/60 backdrop-blur-sm">
-        <div className="max-w-5xl mx-auto px-6 py-6">
-          <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-white border-b border-border">
+        <Container>
+          <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-lg font-light text-rose-900">
+              <h1 className="text-xl font-medium text-foreground">
                 {restaurant?.name}
               </h1>
-              <p className="text-xs text-rose-500">Dashboard</p>
+              <p className="text-sm text-muted">Dashboard</p>
             </div>
             <div className="flex items-center space-x-2">
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => router.push('/dashboard/tables')}
-                className="text-rose-600 hover:text-rose-900 px-3 py-2 text-xs font-light transition-all duration-300 rounded-full hover:bg-rose-100"
               >
-                <QrCode className="h-3 w-3 mr-1 inline" />
-                QR
-              </button>
-              <button
+                <QrCode className="h-4 w-4 mr-2" />
+                QR Codes
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => router.push('/dashboard/staff')}
-                className="text-rose-600 hover:text-rose-900 px-3 py-2 text-xs font-light transition-all duration-300 rounded-full hover:bg-rose-100"
               >
-                <Users className="h-3 w-3 mr-1 inline" />
+                <Users className="h-4 w-4 mr-2" />
                 Staff
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => router.push('/dashboard/analytics')}
-                className="text-rose-600 hover:text-rose-900 px-3 py-2 text-xs font-light transition-all duration-300 rounded-full hover:bg-rose-100"
               >
-                <BarChart3 className="h-3 w-3 mr-1 inline" />
+                <BarChart3 className="h-4 w-4 mr-2" />
                 Analytics
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => router.push('/dashboard/settings')}
-                className="text-rose-600 hover:text-rose-900 px-3 py-2 text-xs font-light transition-all duration-300 rounded-full hover:bg-rose-100"
               >
-                <Settings className="h-3 w-3 mr-1 inline" />
+                <Settings className="h-4 w-4 mr-2" />
                 Settings
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleSignOut}
-                className="bg-rose-200 text-rose-900 px-4 py-2 rounded-full text-xs font-light hover:bg-rose-300 transition-all duration-300 border-0"
               >
+                <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
-      </div>
+        </Container>
+      </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <Container className="py-8">
+        <Grid cols={3} gap="lg">
           {/* Categories Section */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Card>
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-sm font-light text-rose-900 tracking-wider uppercase">Categories</h2>
-                <button
+                <h2 className="text-lg font-medium text-foreground">Categories</h2>
+                <Button
+                  size="sm"
                   onClick={() => setShowAddCategory(true)}
-                  className="bg-rose-200 text-rose-900 px-3 py-2 rounded-full text-xs font-light hover:bg-rose-300 transition-all duration-300 border-0"
                 >
-                  <Plus className="h-3 w-3 mr-1 inline" />
+                  <Plus className="h-4 w-4 mr-2" />
                   Add
-                </button>
+                </Button>
               </div>
               
               {showAddCategory && (
-                <form onSubmit={handleAddCategory} className="mb-6">
-                  <div className="flex gap-3">
-                    <input
+                <motion.form 
+                  onSubmit={handleAddCategory} 
+                  className="mb-6"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="space-y-4">
+                    <Input
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       placeholder="Category name"
-                      className="flex-1 px-4 py-3 bg-white/30 backdrop-blur-sm rounded-2xl text-sm text-rose-900 placeholder-rose-400 focus:outline-none focus:bg-white/50 transition-all duration-300 border-0"
+                      fullWidth
                     />
-                    <button
-                      type="submit"
-                      className="bg-rose-300 text-rose-900 px-4 py-3 rounded-2xl text-xs font-light hover:bg-rose-400 transition-all duration-300 border-0"
-                    >
-                      Add
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowAddCategory(false)}
-                      className="bg-rose-100 text-rose-700 px-4 py-3 rounded-2xl text-xs font-light hover:bg-rose-200 transition-all duration-300 border-0"
-                    >
-                      Cancel
-                    </button>
+                    <div className="flex gap-3">
+                      <Button type="submit" size="sm">
+                        Add
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="secondary" 
+                        size="sm"
+                        onClick={() => setShowAddCategory(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
                   </div>
-                </form>
+                </motion.form>
               )}
               
               <div className="space-y-3">
-                {categories.map((category) => (
-                  <div key={category.id} className="flex justify-between items-center p-4 bg-white/20 backdrop-blur-sm rounded-2xl">
-                    <span className="text-sm font-light text-rose-900">{category.name}</span>
-                    <span className="text-xs text-rose-500">
+                {categories.map((category, index) => (
+                  <motion.div 
+                    key={category.id} 
+                    className="flex justify-between items-center p-4 bg-surface rounded-lg"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <span className="text-sm font-medium text-foreground">{category.name}</span>
+                    <Badge variant="secondary">
                       {menuItems.filter(item => item.category_id === category.id).length} items
-                    </span>
-                  </div>
+                    </Badge>
+                  </motion.div>
                 ))}
               </div>
-            </div>
-          </div>
+            </Card>
+          </motion.div>
 
           {/* Menu Items Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-white/40 backdrop-blur-sm rounded-3xl p-6">
+          <motion.div 
+            className="lg:col-span-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <Card>
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-sm font-light text-rose-900 tracking-wider uppercase">Menu Items</h2>
-                <button
+                <h2 className="text-lg font-medium text-foreground">Menu Items</h2>
+                <Button
+                  size="sm"
                   onClick={() => setShowAddMenuItem(true)}
                   disabled={categories.length === 0}
-                  className="bg-rose-200 text-rose-900 px-3 py-2 rounded-full text-xs font-light hover:bg-rose-300 transition-all duration-300 disabled:opacity-50 border-0"
                 >
-                  <Plus className="h-3 w-3 mr-1 inline" />
+                  <Plus className="h-4 w-4 mr-2" />
                   Add Item
-                </button>
+                </Button>
               </div>
               
               {showAddMenuItem && (
-                <form onSubmit={handleAddMenuItem} className="mb-8 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-xs font-light text-rose-700 mb-2">Item Name</label>
-                      <input
-                        value={newMenuItem.name}
-                        onChange={(e) => setNewMenuItem({...newMenuItem, name: e.target.value})}
-                        required
-                        className="w-full px-4 py-3 bg-white/30 backdrop-blur-sm rounded-2xl text-sm text-rose-900 placeholder-rose-400 focus:outline-none focus:bg-white/50 transition-all duration-300 border-0"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-light text-rose-700 mb-2">Price</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={newMenuItem.price}
-                        onChange={(e) => setNewMenuItem({...newMenuItem, price: e.target.value})}
-                        required
-                        className="w-full px-4 py-3 bg-white/30 backdrop-blur-sm rounded-2xl text-sm text-rose-900 placeholder-rose-400 focus:outline-none focus:bg-white/50 transition-all duration-300 border-0"
-                      />
-                    </div>
-                  </div>
+                <motion.form 
+                  onSubmit={handleAddMenuItem} 
+                  className="mb-8 space-y-6"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Grid cols={2} gap="md">
+                    <Input
+                      label="Item Name"
+                      value={newMenuItem.name}
+                      onChange={(e) => setNewMenuItem({...newMenuItem, name: e.target.value})}
+                      required
+                      fullWidth
+                    />
+                    <Input
+                      label="Price"
+                      type="number"
+                      step="0.01"
+                      value={newMenuItem.price}
+                      onChange={(e) => setNewMenuItem({...newMenuItem, price: e.target.value})}
+                      required
+                      fullWidth
+                    />
+                  </Grid>
                   
                   <div>
-                    <label className="block text-xs font-light text-rose-700 mb-2">Category</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Category</label>
                     <select
                       value={newMenuItem.category_id}
                       onChange={(e) => setNewMenuItem({...newMenuItem, category_id: e.target.value})}
-                      className="w-full px-4 py-3 bg-white/30 backdrop-blur-sm rounded-2xl text-sm text-rose-900 focus:outline-none focus:bg-white/50 transition-all duration-300 border-0"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:border-accent transition-all duration-200 bg-white text-foreground shadow-soft hover:shadow-medium"
                       required
                     >
                       <option value="">Select a category</option>
@@ -323,96 +356,99 @@ export default function DashboardPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-light text-rose-700 mb-2">Description</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">Description</label>
                     <textarea
                       value={newMenuItem.description}
                       onChange={(e) => setNewMenuItem({...newMenuItem, description: e.target.value})}
                       rows={3}
-                      className="w-full px-4 py-3 bg-white/30 backdrop-blur-sm rounded-2xl text-sm text-rose-900 placeholder-rose-400 focus:outline-none focus:bg-white/50 transition-all duration-300 border-0 resize-none"
+                      className="w-full px-4 py-3 border border-border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:border-accent transition-all duration-200 bg-white text-foreground placeholder:text-muted shadow-soft hover:shadow-medium resize-none"
+                      placeholder="Item description..."
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-xs font-light text-rose-700 mb-2">Image URL</label>
-                    <input
-                      value={newMenuItem.image_url}
-                      onChange={(e) => setNewMenuItem({...newMenuItem, image_url: e.target.value})}
-                      className="w-full px-4 py-3 bg-white/30 backdrop-blur-sm rounded-2xl text-sm text-rose-900 placeholder-rose-400 focus:outline-none focus:bg-white/50 transition-all duration-300 border-0"
-                    />
-                  </div>
+                  <Input
+                    label="Image URL"
+                    value={newMenuItem.image_url}
+                    onChange={(e) => setNewMenuItem({...newMenuItem, image_url: e.target.value})}
+                    placeholder="https://..."
+                    fullWidth
+                  />
                   
                   <div className="flex gap-3">
-                    <button
-                      type="submit"
-                      className="bg-rose-300 text-rose-900 px-6 py-3 rounded-2xl text-sm font-light hover:bg-rose-400 transition-all duration-300 border-0"
-                    >
+                    <Button type="submit">
                       Add Item
-                    </button>
-                    <button
-                      type="button"
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="secondary"
                       onClick={() => setShowAddMenuItem(false)}
-                      className="bg-rose-100 text-rose-700 px-6 py-3 rounded-2xl text-sm font-light hover:bg-rose-200 transition-all duration-300 border-0"
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
-                </form>
+                </motion.form>
               )}
               
               <div className="space-y-6">
-                {categories.map((category) => {
+                {categories.map((category, categoryIndex) => {
                   const categoryItems = menuItems.filter(item => item.category_id === category.id);
                   
                   if (categoryItems.length === 0) return null;
                   
                   return (
-                    <div key={category.id}>
-                      <h3 className="text-sm font-light text-rose-800 mb-4 tracking-wider uppercase">{category.name}</h3>
+                    <motion.div 
+                      key={category.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: categoryIndex * 0.1 }}
+                    >
+                      <h3 className="text-lg font-medium text-foreground mb-4">{category.name}</h3>
                       <div className="space-y-3">
-                        {categoryItems.map((item) => (
-                          <div key={item.id} className="flex justify-between items-center p-4 bg-white/20 backdrop-blur-sm rounded-2xl hover:bg-white/30 transition-all duration-300">
+                        {categoryItems.map((item, itemIndex) => (
+                          <motion.div 
+                            key={item.id} 
+                            className="flex justify-between items-center p-4 bg-surface rounded-lg hover:shadow-medium transition-all duration-300"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3, delay: itemIndex * 0.05 }}
+                          >
                             <div className="flex-1">
-                              <div className="flex items-center gap-3">
-                                <h4 className="text-sm font-light text-rose-900">{item.name}</h4>
-                                <span className="text-xs px-3 py-1 rounded-full bg-rose-200/50 text-rose-800">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h4 className="text-sm font-medium text-foreground">{item.name}</h4>
+                                <Badge variant="secondary">
                                   ${item.price}
-                                </span>
-                                <span className={`text-xs px-3 py-1 rounded-full ${
-                                  item.available ? 'bg-green-200/50 text-green-800' : 'bg-red-200/50 text-red-800'
-                                }`}>
+                                </Badge>
+                                <Badge variant={item.available ? 'success' : 'error'}>
                                   {item.available ? 'Available' : 'Unavailable'}
-                                </span>
+                                </Badge>
                               </div>
                               {item.description && (
-                                <p className="text-xs text-rose-500 mt-2 font-light">{item.description}</p>
+                                <p className="text-sm text-muted">{item.description}</p>
                               )}
                             </div>
                             <div className="flex items-center gap-3">
-                              <button
+                              <Button
+                                size="sm"
+                                variant={item.available ? 'danger' : 'success'}
                                 onClick={() => toggleMenuItemAvailability(item.id, item.available)}
-                                className={`px-4 py-2 rounded-full text-xs font-light transition-all duration-300 border-0 ${
-                                  item.available 
-                                    ? 'bg-red-200/50 text-red-700 hover:bg-red-300/50'
-                                    : 'bg-green-200/50 text-green-700 hover:bg-green-300/50'
-                                }`}
                               >
                                 {item.available ? 'Disable' : 'Enable'}
-                              </button>
-                              <button className="p-2 text-rose-400 hover:text-rose-600 transition-all duration-300">
+                              </Button>
+                              <Button size="sm" variant="ghost">
                                 <Edit className="h-4 w-4" />
-                              </button>
+                              </Button>
                             </div>
-                          </div>
+                          </motion.div>
                         ))}
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </Card>
+          </motion.div>
+        </Grid>
+      </Container>
     </div>
   );
 }

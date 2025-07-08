@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { signUp, createRestaurant } from '@/lib/auth';
 import { useAppStore } from '@/lib/store';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
+import Container from '@/components/ui/Container';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -91,18 +93,24 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold text-black">
-            Register Your Restaurant
-          </h2>
-          <p className="mt-2 text-sm text-black">
-            Get started with your restaurant management system
-          </p>
-        </div>
-        
-        <Card>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Container size="sm">
+        <motion.div 
+          className="max-w-md mx-auto space-y-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="text-center">
+            <h2 className="text-3xl font-medium text-foreground mb-2">
+              Register Your Restaurant
+            </h2>
+            <p className="text-muted">
+              Get started with your restaurant management system
+            </p>
+          </div>
+          
+          <Card>
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
               label="Email address"
@@ -155,7 +163,7 @@ export default function RegisterPage() {
             />
             
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Description (Optional)
               </label>
               <textarea
@@ -163,13 +171,19 @@ export default function RegisterPage() {
                 value={formData.description}
                 onChange={handleChange}
                 rows={3}
-                className="w-full px-3 py-2 border border-black rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                className="w-full px-4 py-3 border border-border rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:border-accent transition-all duration-200 bg-white text-foreground placeholder:text-muted shadow-soft hover:shadow-medium resize-none"
                 placeholder="Tell customers about your restaurant..."
               />
             </div>
             
             {error && (
-              <div className="text-red-600 text-sm">{error}</div>
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="text-error text-sm"
+              >
+                {error}
+              </motion.div>
             )}
             
             <Button
@@ -183,15 +197,16 @@ export default function RegisterPage() {
           </form>
           
           <div className="mt-6 text-center">
-            <p className="text-sm text-black">
+            <p className="text-sm text-muted">
               Already have an account?{' '}
-              <a href="/login" className="font-medium text-black hover:underline">
+              <a href="/login" className="font-medium text-foreground hover:text-accent transition-colors">
                 Sign in
               </a>
             </p>
           </div>
         </Card>
-      </div>
+        </motion.div>
+      </Container>
     </div>
   );
 }

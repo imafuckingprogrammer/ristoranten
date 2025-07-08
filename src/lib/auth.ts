@@ -106,32 +106,31 @@ export const createRestaurant = async (name: string, slug: string, description?:
 };
 
 export const createStaffUser = async (email: string, role: UserRole, restaurantId: string) => {
-  const supabase = createClient();
-  
-  // Create the user profile without auth_user_id (it will be null until they register)
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .insert({
-      email,
-      role,
-      restaurant_id: restaurantId,
-      // Don't set auth_user_id - leave it null until they register
-    })
-    .select()
-    .single();
-  
-  if (userError) throw userError;
-  
-  // In production, this would send an invitation email
-  // For now, staff can register normally and you'll assign them manually
-  console.log(`Staff invitation created for ${email}. 
-    Instructions for the staff member:
-    1. Go to ${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/register
-    2. Register with email: ${email}
-    3. Contact restaurant owner to link their account
-  `);
-  
-  return userData;
+  try {
+    const response = await fetch('/api/staff/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        role,
+        restaurantId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create staff user');
+    }
+
+    const userData = await response.json();
+    return userData;
+    
+  } catch (error) {
+    console.error('Error creating staff user:', error);
+    throw error;
+  }
 };
 
 export const getRoleBasedRedirectPath = (role: UserRole): string => {

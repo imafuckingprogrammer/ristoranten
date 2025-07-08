@@ -3,16 +3,15 @@
 import { motion } from 'framer-motion';
 
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
 export default function LoadingSpinner({ size = 'md', className = '' }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'w-4 h-4',
-    md: 'w-8 h-8',
-    lg: 'w-12 h-12',
-    xl: 'w-16 h-16',
+    md: 'w-6 h-6',
+    lg: 'w-8 h-8',
   };
 
   return (
@@ -22,7 +21,7 @@ export default function LoadingSpinner({ size = 'md', className = '' }: LoadingS
       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
     >
       <svg
-        className="w-full h-full text-black"
+        className="w-full h-full text-primary"
         fill="none"
         viewBox="0 0 24 24"
       >
@@ -32,7 +31,7 @@ export default function LoadingSpinner({ size = 'md', className = '' }: LoadingS
           cy="12"
           r="10"
           stroke="currentColor"
-          strokeWidth="4"
+          strokeWidth="3"
         />
         <path
           className="opacity-75"
@@ -49,14 +48,15 @@ export function LoadingScreen({ message = 'Loading...' }: { message?: string }) 
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-white flex flex-col items-center justify-center"
+      transition={{ duration: 0.3 }}
+      className="min-h-screen bg-background flex flex-col items-center justify-center"
     >
-      <LoadingSpinner size="xl" />
+      <LoadingSpinner size="lg" />
       <motion.p
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mt-4 text-black font-medium"
+        transition={{ delay: 0.15, duration: 0.3 }}
+        className="mt-4 text-foreground font-medium"
       >
         {message}
       </motion.p>
