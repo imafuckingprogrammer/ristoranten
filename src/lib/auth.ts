@@ -105,7 +105,7 @@ export const createRestaurant = async (name: string, slug: string, description?:
   return data;
 };
 
-export const createStaffUser = async (email: string, role: UserRole, restaurantId: string) => {
+export const createStaffUser = async (email: string, name: string, role: UserRole, restaurantId: string) => {
   try {
     const response = await fetch('/api/staff/create', {
       method: 'POST',
@@ -114,6 +114,7 @@ export const createStaffUser = async (email: string, role: UserRole, restaurantI
       },
       body: JSON.stringify({
         email,
+        name,
         role,
         restaurantId,
       }),
@@ -149,11 +150,14 @@ export const getRoleBasedRedirectPath = (role: UserRole): string => {
 };
 
 export const checkUserPermission = (userRole: UserRole, requiredRole: UserRole | UserRole[]): boolean => {
-  // DEBUG MODE: Allow all roles to access all interfaces for testing
-  // This is a temporary fix to allow testing of all interfaces
-  return true;
+  // Proper role-based permission check
+  const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
   
-  // Normal permission check (disabled for testing)
-  // const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-  // return roles.includes(userRole);
+  // OWNER has access to everything
+  if (userRole === 'OWNER') {
+    return true;
+  }
+  
+  // Check if user's role is in the required roles
+  return roles.includes(userRole);
 };

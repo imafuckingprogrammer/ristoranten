@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
-import { signOut } from '@/lib/auth';
+import { signOut, checkUserPermission } from '@/lib/auth';
 import { OrderWithItems, Table } from '@/lib/types';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -49,7 +49,13 @@ export default function WaitStaffPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    if (!isAuthenticated || !user || user.role !== 'WAITSTAFF') {
+    if (!isAuthenticated || !user) {
+      router.push('/login');
+      return;
+    }
+    
+    // Check if user has permission to access wait staff interface
+    if (!checkUserPermission(user.role, 'WAITSTAFF')) {
       router.push('/login');
       return;
     }

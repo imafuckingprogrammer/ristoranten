@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
+import { checkUserPermission } from '@/lib/auth';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Container from '@/components/ui/Container';
@@ -41,7 +42,13 @@ export default function AnalyticsPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    if (!isAuthenticated || !user || user.role !== 'OWNER') {
+    if (!isAuthenticated || !user) {
+      router.push('/login');
+      return;
+    }
+    
+    // Check if user has permission to access analytics (owners only)
+    if (!checkUserPermission(user.role, 'OWNER')) {
       router.push('/login');
       return;
     }

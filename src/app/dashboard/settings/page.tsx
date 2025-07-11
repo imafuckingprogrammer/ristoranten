@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
+import { checkUserPermission } from '@/lib/auth';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
@@ -34,7 +35,13 @@ export default function SettingsPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    if (!isAuthenticated || !user || user.role !== 'OWNER') {
+    if (!isAuthenticated || !user) {
+      router.push('/login');
+      return;
+    }
+    
+    // Check if user has permission to access settings (owners only)
+    if (!checkUserPermission(user.role, 'OWNER')) {
       router.push('/login');
       return;
     }

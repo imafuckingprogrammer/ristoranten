@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
-import { signOut } from '@/lib/auth';
+import { signOut, checkUserPermission } from '@/lib/auth';
 import { Table } from '@/lib/types';
 import { generateQRCodeForTable } from '@/lib/qr';
 import Button from '@/components/ui/Button';
@@ -36,7 +36,13 @@ export default function TablesPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    if (!isAuthenticated || !user || user.role !== 'OWNER') {
+    if (!isAuthenticated || !user) {
+      router.push('/login');
+      return;
+    }
+    
+    // Check if user has permission to manage tables (owners only)
+    if (!checkUserPermission(user.role, 'OWNER')) {
       router.push('/login');
       return;
     }

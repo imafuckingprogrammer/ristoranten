@@ -4,12 +4,12 @@ import { UserRole } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, role, restaurantId } = await request.json();
+    const { email, role, restaurantId, name } = await request.json();
 
     // Validate required fields
-    if (!email || !role || !restaurantId) {
+    if (!email || !role || !restaurantId || !name) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: email, role, restaurantId, and name are required' },
         { status: 400 }
       );
     }
@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
       .from('users')
       .insert({
         email,
+        name,
         role,
         restaurant_id: restaurantId,
         auth_user_id: authData.user.id, // Link to real auth account

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/lib/store';
-import { signOut } from '@/lib/auth';
+import { signOut, checkUserPermission } from '@/lib/auth';
 import { createClient } from '@/lib/supabase';
 import { Category, MenuItem } from '@/lib/types';
 import Button from '@/components/ui/Button';
@@ -36,7 +36,13 @@ export default function DashboardPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    if (!isAuthenticated || !user || user.role !== 'OWNER') {
+    if (!isAuthenticated || !user) {
+      router.push('/login');
+      return;
+    }
+    
+    // Check if user has permission to access dashboard (owners only)
+    if (!checkUserPermission(user.role, 'OWNER')) {
       router.push('/login');
       return;
     }

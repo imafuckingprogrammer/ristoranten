@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store';
 import { createClient } from '@/lib/supabase';
-import { createStaffUser } from '@/lib/auth';
+import { createStaffUser, checkUserPermission } from '@/lib/auth';
 import { User, UserRole } from '@/lib/types';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -30,6 +30,7 @@ export default function StaffPage() {
   const [addingStaff, setAddingStaff] = useState(false);
   const [newStaff, setNewStaff] = useState({
     email: '',
+    name: '',
     role: 'WAITSTAFF' as UserRole,
   });
   const [createdStaffCredentials, setCreatedStaffCredentials] = useState<{
@@ -42,7 +43,13 @@ export default function StaffPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    if (!isAuthenticated || !user || user.role !== 'OWNER') {
+    if (!isAuthenticated || !user) {
+      router.push('/login');
+      return;
+    }
+    
+    // Check if user has permission to manage staff (owners only)
+    if (!checkUserPermission(user.role, 'OWNER')) {
       router.push('/login');
       return;
     }
@@ -74,7 +81,7 @@ export default function StaffPage() {
 
   const handleAddStaff = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!restaurant || !newStaff.email.trim()) return;
+    if (!restaurant || !newStaff.email.trim() || !newStaff.name.trim()) return;
     
     try {
       setAddingStaff(true);
@@ -94,12 +101,13 @@ export default function StaffPage() {
       // Create staff user (this will create both auth user and profile)
       const staffUser = await createStaffUser(
         newStaff.email.trim(),
+        newStaff.name.trim(),
         newStaff.role,
         restaurant.id
       );
       
       setStaff([staffUser, ...staff]);
-      setNewStaff({ email: '', role: 'WAITSTAFF' });
+      setNewStaff({ email: '', name: '', role: 'WAITSTAFF' });
       setShowAddStaff(false);
       
       // Store credentials for display
@@ -219,6 +227,15 @@ export default function StaffPage() {
             <form onSubmit={handleAddStaff} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
+                  label="Full Name"
+                  type="text"
+                  value={newStaff.name}
+                  onChange={(e) => setNewStaff({...newStaff, name: e.target.value})}
+                  required
+                  fullWidth
+                  placeholder="John Doe"
+                />
+                <Input
                   label="Email Address"
                   type="email"
                   value={newStaff.email}
@@ -248,7 +265,7 @@ export default function StaffPage() {
                 <Button 
                   type="submit" 
                   loading={addingStaff}
-                  disabled={!newStaff.email.trim()}
+                  disabled={!newStaff.email.trim() || !newStaff.name.trim()}
                 >
                   Add Staff Member
                 </Button>
@@ -340,13 +357,13 @@ export default function StaffPage() {
                     </div>
                     <div>
                       <div className="flex items-center space-x-2">
-                        <h3 className="font-medium text-black">{staffMember.email}</h3>
+                        <h3 className="font-medium text-black">{staffMember.name || staffMember.email}</h3>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(staffMember.role)}`}>
                           {staffMember.role.charAt(0) + staffMember.role.slice(1).toLowerCase()}
                         </span>
                       </div>
                       <p className="text-sm text-black">
-                        Added {new Date(staffMember.created_at).toLocaleDateString()}
+                        {staffMember.email} • Added {new Date(staffMember.created_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
